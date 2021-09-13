@@ -6,10 +6,13 @@
  '(coq-maths-menu-enable t)
  '(coq-unicode-tokens-enable nil)
  '(custom-enabled-themes '(manoj-dark))
+ '(org-agenda-files '("~/projects/other/agenda"))
  '(package-archives
    '(("melpa-stable" . "http://stable.melpa.org/packages/")
      ("gnu" . "http://elpa.gnu.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
+ '(package-selected-packages
+   '(excorporate workgroups2 undo-tree tuareg slime rust-mode restclient proof-general magit lsp-ui lsp-haskell git discover company-coq browse-kill-ring agda2-mode))
  '(proof-delete-empty-windows t)
  '(proof-disappearing-proofs nil)
  '(proof-shell-eager-annotation-end
@@ -20,6 +23,36 @@
    '("Add Search Blacklist \"Private_\" \"_subproof\". " "Set Suggest Proof Using. "))
  '(proof-splash-enable nil)
  '(proof-three-window-enable t))
+
+(defconst user-init-dir
+  (cond ((boundp 'user-emacs-directory)
+         user-emacs-directory)
+        ((boundp 'user-init-directory)
+         user-init-directory)
+        (t "~/.emacs.d/")))
+
+(defun load-user-file (file)
+  (interactive "f")
+  "Load a file in current user's configuration directory"
+  (load-file (expand-file-name file user-init-dir)))
+
+(defun ensure-package-installed (&rest packages)
+  (mapcar
+   (lambda (package)
+     (if (package-installed-p package)
+         nil
+       (if (y-or-n-p (format "Package %s is missing. Install it? " package))
+	   (progn
+	     (package-refresh-contents)
+             (package-install package))
+         package)))
+   packages))
+
+(defun dos2unix ()
+  "Replace DOS eolns CR LF with Unix eolns CR"
+  (interactive)
+    (goto-char (point-min))
+      (while (search-forward "\r" nil t) (replace-match "")))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -41,29 +74,36 @@
 (workgroups-mode 1)
 (defalias 'yes-or-no-p 'y-or-n-p)
 (global-undo-tree-mode)
+(epa-file-enable)
 (global-set-key "\C-cy" '(lambda ()
                            (interactive)
                            (popup-menu 'yank-menu)))
-
-(defun ensure-package-installed (&rest packages)
-  (mapcar
-   (lambda (package)
-     (if (package-installed-p package)
-         nil
-       (if (y-or-n-p (format "Package %s is missing. Install it? " package))
-	   (progn
-	     (package-refresh-contents)
-             (package-install package))
-         package)))
-   packages))
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
+(setq org-agenda-include-diary t)
+(global-company-mode)
+(if (file-readable-p (expand-file-name "aux.el" user-init-dir))
+    (load-user-file "aux.el")
+  )
+(if (boundp 'outlook_email)
+    (setq excorporate-configuration (quote (outlook_email . "https://outlook.office365.com/EWS/Exchange.asmx")))
+  )
 
 (or (file-exists-p package-user-dir)
     (package-refresh-contents))
 
-(ensure-package-installed 'tuareg 'company-coq 'browse-kill-ring 'company 'discover 'lsp-haskell 'haskell-mode 'lsp-ui 'lsp-mode 'ht 'f 'dash 'lv 'markdown-mode 'proof-general 'rust-mode 'slime 'macrostep 'spinner 'undo-tree 'yasnippet 'workgroups2 'tuareg 'magit 'restclient 'agda2-mode)
+(ensure-package-installed 'tuareg 'company-coq 'browse-kill-ring 'company 'discover 'lsp-haskell 'haskell-mode 'lsp-ui 'lsp-mode 'ht 'f 'dash 'lv 'markdown-mode 'proof-general 'rust-mode 'slime 'macrostep 'spinner 'undo-tree 'yasnippet 'workgroups2 'tuareg 'magit 'restclient 'agda2-mode 'excorporate)
 
 (package-initialize)
 
+(add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+(add-hook 'lisp-interaction-mode-hook 'eldoc-mode)
+(add-hook 'ielm-mode-hook 'eldoc-mode)
+(add-hook 'emacs-lisp-mode-hook
+          '(lambda ()
+             (push 'company-elisp company-backends)))
+(add-hook 'coq-mode-hook
+	  (lambda () (undo-tree-mode 1)))
 (add-hook 'coq-mode-hook #'company-coq-mode)
 (add-hook 'haskell-mode-hook #'lsp)
 (add-hook 'haskell-literate-mode-hook #'lsp)
@@ -82,9 +122,3 @@
 
 (when (fboundp 'windmove-default-keybindings)
   (windmove-default-keybindings))
-
-(defun dos2unix ()
-  "Replace DOS eolns CR LF with Unix eolns CR"
-  (interactive)
-    (goto-char (point-min))
-      (while (search-forward "\r" nil t) (replace-match "")))
