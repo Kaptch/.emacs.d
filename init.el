@@ -6,7 +6,7 @@
  '(coq-maths-menu-enable t)
  '(coq-unicode-tokens-enable nil)
  '(custom-enabled-themes '(manoj-dark))
- '(org-agenda-files '("~/projects/other/agenda"))
+ '(org-agenda-files nil)
  '(package-archives
    '(("melpa-stable" . "http://stable.melpa.org/packages/")
      ("gnu" . "http://elpa.gnu.org/packages/")
@@ -92,6 +92,17 @@
 (or (file-exists-p package-user-dir)
     (package-refresh-contents))
 
+(copy-face font-lock-constant-face 'calendar-iso-week-face)
+(set-face-attribute 'calendar-iso-week-face nil
+                    :height 0.7)
+(setq calendar-intermonth-text
+      '(propertize
+        (format "%2d"
+                (car
+                 (calendar-iso-from-absolute
+                  (calendar-absolute-from-gregorian (list month day year)))))
+        'font-lock-face 'calendar-iso-week-face))
+
 (ensure-package-installed 'tuareg 'company-coq 'browse-kill-ring 'company 'discover 'lsp-haskell 'haskell-mode 'lsp-ui 'lsp-mode 'ht 'f 'dash 'lv 'markdown-mode 'proof-general 'rust-mode 'slime 'macrostep 'spinner 'undo-tree 'yasnippet 'workgroups2 'tuareg 'magit 'restclient 'agda2-mode 'excorporate)
 
 (package-initialize)
@@ -103,7 +114,11 @@
           '(lambda ()
              (push 'company-elisp company-backends)))
 (add-hook 'coq-mode-hook
-	  (lambda () (undo-tree-mode 1)))
+	  (lambda () (progn
+		       (undo-tree-mode 1)
+		       (global-set-key "\C-cy" '(lambda ()
+						  (interactive)
+						  (popup-menu 'yank-menu))))))
 (add-hook 'coq-mode-hook #'company-coq-mode)
 (add-hook 'haskell-mode-hook #'lsp)
 (add-hook 'haskell-literate-mode-hook #'lsp)
