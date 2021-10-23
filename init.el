@@ -3,7 +3,16 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(coq-indent-box-style t)
  '(coq-maths-menu-enable t)
+ '(coq-smie-monadic-tokens
+   '((";;" . ";; monadic")
+     ("do" . "let monadic")
+     ("<-" . "<- monadic")
+     (";" . "in monadic")
+     (";;;" . ";; monadic")))
+ '(coq-smie-user-tokens '((\"∗\" . \"/\\\")))
+ '(coq-time-commands t)
  '(coq-unicode-tokens-enable nil)
  '(custom-enabled-themes '(manoj-dark))
  '(org-agenda-files nil)
@@ -66,6 +75,7 @@
 (setq column-number-mode t)
 ; proof general cursor
 (setq overlay-arrow-string "")
+(setq coq-compile-before-require t)
 (setq inhibit-startup-screen t)
 (setq visible-bell 1)
 (setq ido-enable-flex-matching t)
